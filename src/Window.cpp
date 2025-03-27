@@ -1,35 +1,68 @@
-#include "./lib/Window.hpp"
-#include <iostream>
+#include "Window.hpp"
+#include <memory>
 
-int Window(int argc, char* args[]) {
-    SDL_Window* window = NULL; 
-    SDL_Surface* screenSurface = NULL;
+Window::Window(const std::string& title, int width, int height) :
+    window_(nullptr),
+    renderer_(nullptr),
+    running_(false),
+    width_(width),
+    height_(height)
+{
+    window_ = SDL_CreateWindow(title.c_str(),
+                              SDL_WINDOWPOS_CENTERED,
+                              SDL_WINDOWPOS_CENTERED,
+                              width_,
+                              height_,
+                              SDL_WINDOW_SHOWN);
+    if (!window_) {
+        std::cerr << "Failed to create window: " << SDL_GetError() << std::endl;
+        return;
+    }
+}
 
-    if ( SDL_Init( SDL_INIT_VIDEO) < 0) {
-        std::cout << "SDL COULDN'T INITIALIZE" <<std::endl;
-    } else {
-        window = SDL_CreateWindow("Flappy-Bird",SDL_WINDOWPOS_UNDEFINED,  SDL_WINDOWPOS_UNDEFINED,
-        SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+Window::~Window() {
+    if (window_) {
+        SDL_DestroyWindow(window_);
+    }
+    SDL_Quit();
+}
 
-        if (window = NULL) {std::cout << "Window couldn't be created!"<<std::endl;}
-        else {
-            //Get window surface
-            screenSurface = SDL_GetWindowSurface( window );
+void Window::run() {
+    if (!window_) return;
 
-            //Fill the surface white
-            SDL_FillRect( screenSurface, NULL, SDL_MapRGB( screenSurface->format, 0xFF, 0xFF, 0xFF ) );
-            
-            //Update the surface
-            SDL_UpdateWindowSurface( window );
-            //Hack to get window to stay up
-            SDL_Event e; bool quit = false; while( quit == false ){ while( SDL_PollEvent( &e ) ){ if( e.type == SDL_QUIT ) quit = true; } }
+    running_ = true;
+    renderer_ = std::make_unique<Renderer>(window_);
+
+    while (running_) {
+        handleEvents();
+        update();
+        render();
+    }
+}
+
+void Window::handleEvents() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            running_ = false;
         }
     }
-        //destroy the window
-        SDL_DestroyWindow( window );
+}
 
-        
-        SDL_Quit();
+void Window::update() {
+    // Game update logic here
+}
+
+void Window::render() {
+    if (!renderer_) return;
+
+    renderer_->clear();
     
-        return 0;
+    // Render game objects here
+    renderer_->renderBackground();
+    // renderer_->renderBird(...);
+    // renderer_->renderPipe(...);
+    // renderer_->renderCloud(...);
+    
+    renderer_->present();
 }

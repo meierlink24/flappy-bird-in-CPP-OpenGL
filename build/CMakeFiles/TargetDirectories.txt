@@ -1,0 +1,3 @@
+/home/stefan/floppy-bird/build/CMakeFiles/flappy-bird.dir
+/home/stefan/floppy-bird/build/CMakeFiles/edit_cache.dir
+/home/stefan/floppy-bird/build/CMakeFiles/rebuild_cache.dir
